@@ -542,7 +542,7 @@ class SMARTS(ShowBase):
 
     def _pybullet_provider_sync(self, provider_state: ProviderState):
         current_vehicle_ids = {v.vehicle_id for v in provider_state.vehicles}
-        previous_sv_ids = self._vehicle_index.social_vehicle_ids
+        previous_sv_ids = self._vehicle_index.social_vehicle_ids()
         exited_vehicles = previous_sv_ids - current_vehicle_ids
         self._teardown_vehicles_and_agents(exited_vehicles)
 
@@ -550,7 +550,7 @@ class SMARTS(ShowBase):
         for vehicle in provider_state.vehicles:
             vehicle_id = vehicle.vehicle_id
             # either this is a pybullet agent vehicle, or it is a social vehicle
-            if vehicle_id in self._vehicle_index.agent_vehicle_ids:
+            if vehicle_id in self._vehicle_index.agent_vehicle_ids():
                 # this is an agent vehicle
                 agent_id = self._vehicle_index.actor_id_from_vehicle_id(vehicle_id)
                 agent_interface = self._agent_manager.agent_interface_for_agent_id(
@@ -570,7 +570,7 @@ class SMARTS(ShowBase):
                     pybullet_vehicle.set_speed(vehicle.speed)
             else:
                 # This vehicle is a social vehicle
-                if vehicle_id in self._vehicle_index.social_vehicle_ids:
+                if vehicle_id in self._vehicle_index.social_vehicle_ids():
                     social_vehicle = self._vehicle_index.vehicle_by_id(vehicle_id)
                 else:
                     # It is a new social vehicle we have not seen yet.
@@ -599,7 +599,7 @@ class SMARTS(ShowBase):
             if interface.action_space in self._pybullet_action_spaces
         }
 
-        for vehicle_id in self._vehicle_index.agent_vehicle_ids:
+        for vehicle_id in self._vehicle_index.agent_vehicle_ids():
             agent_id = self._vehicle_index.actor_id_from_vehicle_id(vehicle_id)
             if agent_id not in pybullet_agent_ids:
                 continue
@@ -683,7 +683,7 @@ class SMARTS(ShowBase):
             )
             if provider == self._traffic_sim:
                 # Remove agent vehicles from provider vehicles
-                provider_state.filter(self._vehicle_index.agent_vehicle_ids)
+                provider_state.filter(self._vehicle_index.agent_vehicle_ids())
 
             accumulated_provider_state.merge(provider_state)
 
@@ -820,7 +820,7 @@ class SMARTS(ShowBase):
     def _process_collisions(self):
         self._vehicle_collisions = defaultdict(list)  # list of `Collision` instances
 
-        for vehicle_id in self._vehicle_index.agent_vehicle_ids:
+        for vehicle_id in self._vehicle_index.agent_vehicle_ids():
             vehicle = self._vehicle_index.vehicle_by_id(vehicle_id)
             # We are only concerned with vehicle-vehicle collisions
             collidee_bullet_ids = set(
@@ -859,7 +859,7 @@ class SMARTS(ShowBase):
 
         traffic = {}
         for v in provider_state.vehicles:
-            if v.vehicle_id in self._vehicle_index.agent_vehicle_ids:
+            if v.vehicle_id in self._vehicle_index.agent_vehicle_ids():
                 # this is an agent controlled vehicle
                 agent_id = self._vehicle_index.actor_id_from_vehicle_id(v.vehicle_id)
                 agent_obs = obs[agent_id]
@@ -906,7 +906,7 @@ class SMARTS(ShowBase):
                     driven_path=driven_path,
                     mission_route_geometry=mission_route_geometry,
                 )
-            elif v.vehicle_id in self._vehicle_index.social_vehicle_ids:
+            elif v.vehicle_id in self._vehicle_index.social_vehicle_ids():
                 # this is a social vehicle
                 vehicle = self._vehicle_index.vehicle_by_id(v.vehicle_id)
                 traffic[v.vehicle_id] = envision_types.TrafficActorState(
